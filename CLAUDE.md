@@ -45,6 +45,95 @@ The application follows a **Layered Architecture** with **Facade Pattern** at it
 python main.py
 ```
 
+## Reglas de Contribución + Validación Automática (CRÍTICO)
+
+**Claude: estas reglas son OBLIGATORIAS cuando trabaje en este repositorio. No entregue respuesta final hasta validarlas.**
+
+### Objetivo
+Entregar cambios **funcionales, probados y mínimos**. Toda respuesta debe estar respaldada por ejecución de pruebas.
+
+---
+
+### Flujo de Trabajo Obligatorio
+
+1. **Plan Interno**
+   - Analice la solicitud.
+   - Genere un plan *interno* (no lo imprima completo a menos que se le solicite).  
+
+2. **Estado Actual: Ejecutar Pruebas**
+   - Corra la suite de validación:
+     ```bash
+     python test_engine.py || exit 1
+     python test_enhanced.py || exit 1
+     pytest -q || exit 1
+     ```
+   - Si no puede ejecutar un comando, explique por qué y pida instrucciones.
+
+3. **Aplicar Cambios Mínimos**
+   - Modifique solo los archivos necesarios.
+   - Límite por iteración: ~400 líneas totales modificadas. Si excede, pida aprobación.
+
+4. **Re-Ejecutar Pruebas (Obligatorio)**
+   - Vuelva a correr **todos** los comandos de prueba.
+   - Si falla algo: diagnostique, repare, repita (máx. 3 ciclos; luego pida ayuda).
+
+5. **Verificación Final**
+   - Opcional: lint si está disponible (`ruff`, `flake8`, `black --check`, etc.).
+   - Confirme: "Todos los tests en verde."
+
+6. **Respuesta al Usuario**
+   - Resumen breve de cambios.
+   - Estado de pruebas: ✅ verde / ❌ fallos (con breve lista).
+   - *No pegue archivos completos.* Presente diff compacto o lista de rutas.
+
+---
+
+### Disparador de Revalidación: "¿Está seguro al 100%?"
+Si el usuario pregunta "¿está seguro al 100%?" (o detecta "100% seguro", "fully sure", "completely verified"):
+1. Re-ejecute **todo el flujo** (Pasos 2–5).
+2. Compare checksums o timestamps si es posible.
+3. Responda solo tras confirmar resultados actualizados.
+
+---
+
+### Política de Uso de Tokens
+- No imprima archivos completos >200 líneas. Use diffs (`@@ ... @@`).
+- Para errores extensos, resuma: *"Fallaron 12 pruebas; muestro 3 más representativas, pídame el resto."*
+- No muestre binarios ni JSON gigantes; diga dónde están.
+
+---
+
+### Manejo de UI / PyQt6
+Cuando cambie componentes de UI con señales/slots (ej. `OptimizedTrackView`):
+- Verifique que el objeto no sea destruido antes de conectar señales.
+- Ejecute prueba rápida de creación/mostrar/descartar ventana si hay script (`python tools/smoke_ui.py` si existe).
+- Si no hay prueba, sugiera crear una.
+
+---
+
+### Comandos Útiles (Claude puede pedir permiso para usarlos)
+```bash
+# Configurar entorno (ajuste según proyecto)
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# Suite rápida
+python test_engine.py
+python test_enhanced.py
+pytest -q
+
+# Lint opcional
+ruff check . || true
+```
+
+### Qué Hacer si Faltan Pruebas
+
+Si no existen pruebas para el componente que modificará:
+- Pregunte al usuario si debe crear tests mínimos.
+- Sugiera un smoke test (importar módulo + crear objeto principal + salida limpia).
+
+---
+
 ### Testing
 ```bash
 # Run core algorithm tests
@@ -61,10 +150,14 @@ pytest test_*.py
 ```bash
 # Install core requirements
 pip install -r requirements.txt
+```
 
+```bash
 # For full audio analysis (optional but recommended)
 pip install librosa mutagen soundfile audioread
+```
 
+```bash
 # For security features (recommended)
 pip install cryptography
 ```

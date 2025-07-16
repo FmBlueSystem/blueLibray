@@ -8,7 +8,7 @@ import sys
 import os
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QLoggingCategory, Qt
-from harmonic_mixer.ui import MainWindow
+from harmonic_mixer.ui.main_window_clean import MainWindow
 
 # Suppress Qt multimedia info messages
 QLoggingCategory.setFilterRules("qt.multimedia.ffmpeg=false")
