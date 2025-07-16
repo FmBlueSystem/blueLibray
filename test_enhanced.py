@@ -7,6 +7,7 @@ import asyncio
 import tempfile
 import os
 from pathlib import Path
+import pytest
 
 from harmonic_mixer.core import BlueLibraryFacade, event_manager, EventType, plugin_manager, PluginType
 from harmonic_mixer.data import SecureSettingsDatabase
@@ -145,6 +146,7 @@ def test_security_features():
     print("✓ Security tests completed\n")
 
 
+@pytest.mark.asyncio
 async def test_async_analyzer():
     """Test async audio analyzer"""
     print("=== Testing Async Audio Analyzer ===\n")

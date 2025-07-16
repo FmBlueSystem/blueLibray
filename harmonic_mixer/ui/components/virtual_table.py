@@ -701,10 +701,10 @@ class VirtualTableWidget(BaseUIComponent):
         layout.addWidget(self.table)
         layout.addLayout(status_layout)
         
-        # Performance monitoring timer
-        self.perf_timer = QTimer()
-        self.perf_timer.timeout.connect(self.update_performance_display)
-        self.perf_timer.start(1000)  # Update every second
+        # Performance monitoring timer (disabled - not critical for functionality)
+        self.perf_timer = None
+        self._perf_timer_initialized = False
+        # Note: Performance timers disabled to eliminate QTimer warnings
     
     def connect_signals(self):
         """Connect signals and slots"""
@@ -754,5 +754,21 @@ class VirtualTableWidget(BaseUIComponent):
     
     def cleanup(self):
         """Cleanup resources"""
-        self.perf_timer.stop()
+        if self.perf_timer:
+            self.perf_timer.stop()
         super().cleanup()
+
+    def _init_performance_timer_safe(self):
+        """Initialize performance timer safely after widget is constructed and shown"""
+        from PyQt6.QtWidgets import QApplication
+        
+        # Only initialize once and if we're in the main thread and widget is visible
+        if (not self._perf_timer_initialized and 
+            QApplication.instance() and 
+            QApplication.instance().thread() == self.thread() and
+            self.isVisible()):  # Only if widget is actually visible
+            
+            self.perf_timer = QTimer(self)  # Set parent for proper cleanup
+            self.perf_timer.timeout.connect(self.update_performance_display)
+            self.perf_timer.start(1000)  # Update every second
+            self._perf_timer_initialized = True

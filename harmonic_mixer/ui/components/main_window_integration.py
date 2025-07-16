@@ -37,10 +37,10 @@ class OptimizedTrackView(BaseUIComponent):
         
         super().__init__(facade, parent)
         
-        # Performance monitoring
-        self.performance_timer = QTimer()
-        self.performance_timer.timeout.connect(self.log_performance)
-        self.performance_timer.start(30000)  # Every 30 seconds
+        # Performance monitoring (disabled - not critical for functionality)
+        self.performance_timer = None
+        self._timer_initialized = False
+        # Note: Performance timers disabled to eliminate QTimer warnings
     
     def setup_ui(self):
         """Setup the optimized UI"""
@@ -418,6 +418,22 @@ class OptimizedTrackView(BaseUIComponent):
         """Return the viewport widget (compatibility method)"""
         # Return self as the viewport since this is the main widget
         return self
+
+    def init_performance_timer_safe(self):
+        """Initialize performance timer safely after widget is fully constructed"""
+        from PyQt6.QtCore import QTimer
+        from PyQt6.QtWidgets import QApplication
+        
+        # Only initialize once and if we're in the main thread
+        if (not self._timer_initialized and 
+            QApplication.instance() and 
+            QApplication.instance().thread() == self.thread() and
+            self.isVisible()):  # Only if widget is actually visible
+            
+            self.performance_timer = QTimer(self)  # Set parent for proper cleanup
+            self.performance_timer.timeout.connect(self.log_performance)
+            self.performance_timer.start(30000)  # Every 30 seconds
+            self._timer_initialized = True
 
 
 class OptimizedProgressManager(BaseUIComponent):

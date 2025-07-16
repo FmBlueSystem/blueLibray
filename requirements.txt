@@ -14,9 +14,12 @@ soundfile>=0.12.0
 audioread>=3.0.0
 
 # Serato DJ Integration
-pyserato>=1.0.0
+pyserato>=0.1.0
 psutil>=5.9.0
 
 # Development and testing
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
+
+# LLM Integration
+aiohttp>=3.8.0

@@ -149,17 +149,19 @@ class SecureSettingsDatabase(SettingsDatabase):
         
         encrypted_value = self.encryption.encrypt(value)
         
-        cursor = self.conn.cursor()
+        conn = self._get_connection()
+        cursor = conn.cursor()
         cursor.execute("""
             INSERT OR REPLACE INTO settings (key, value, updated_at)
             VALUES (?, ?, CURRENT_TIMESTAMP)
         """, (key, encrypted_value))
         
-        self.conn.commit()
+        conn.commit()
     
     def get_secure_setting(self, key: str, default: Any = None) -> Any:
         """Force decryption for a specific setting"""
-        cursor = self.conn.cursor()
+        conn = self._get_connection()
+        cursor = conn.cursor()
         cursor.execute("SELECT value FROM settings WHERE key = ?", (key,))
         row = cursor.fetchone()
         
@@ -214,14 +216,15 @@ class DataProtectionManager:
     
     def delete_user_data(self):
         """Delete all user data"""
-        cursor = self.db.conn.cursor()
+        conn = self.db._get_connection()
+        cursor = conn.cursor()
         
         # Clear all tables
         cursor.execute("DELETE FROM settings")
         cursor.execute("DELETE FROM playlists")
         cursor.execute("DELETE FROM recent_folders")
         
-        self.db.conn.commit()
+        conn.commit()
     
     def backup_user_data(self, backup_path: str):
         """Create encrypted backup of user data"""

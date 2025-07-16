@@ -43,10 +43,10 @@ class BaseUIComponent(QWidget, ABC, metaclass=BaseUIComponentMeta):
         self.setup_ui()
         self.connect_signals()
         
-        # Performance monitoring
-        self.performance_timer = QTimer()
-        self.performance_timer.timeout.connect(self._log_performance)
-        self.performance_timer.start(30000)  # Log every 30 seconds
+        # Performance monitoring (disabled - not critical for functionality)
+        self.performance_timer = None
+        self._timer_initialized = False
+        # Note: Performance timers disabled to eliminate QTimer warnings
     
     @abstractmethod
     def setup_ui(self):
@@ -201,3 +201,18 @@ class AsyncUIComponent(BaseUIComponent):
         """Cleanup with async operation cancellation"""
         self.cancel_all_operations()
         super().cleanup()
+
+    def _init_performance_timer_safe(self):
+        """Initialize performance timer safely after widget is fully constructed"""
+        from PyQt6.QtWidgets import QApplication
+        
+        # Only initialize once and if we're in the main thread
+        if (not self._timer_initialized and 
+            QApplication.instance() and 
+            QApplication.instance().thread() == self.thread() and
+            not self.isHidden()):  # Only if widget is actually shown
+            
+            self.performance_timer = QTimer(self)  # Set parent for proper cleanup
+            self.performance_timer.timeout.connect(self._log_performance)
+            self.performance_timer.start(30000)  # Log every 30 seconds
+            self._timer_initialized = True

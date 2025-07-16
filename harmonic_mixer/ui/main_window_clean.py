@@ -235,6 +235,8 @@ class MainWindow(QMainWindow):
         # Add progress bar to status bar
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
+        self.progress_bar.setMinimumWidth(200)
+        self.progress_bar.setTextVisible(True)
         self.statusBar().addPermanentWidget(self.progress_bar)
         
         # Add track count label
@@ -415,9 +417,13 @@ class MainWindow(QMainWindow):
         data = event.data
         current = data['current']
         total = data['total']
+        percentage = data.get('percentage', (current / total * 100) if total > 0 else 0)
+        
+        self.progress_bar.setVisible(True)
         self.progress_bar.setValue(current)
         self.progress_bar.setMaximum(total)
-        self.statusBar().showMessage(f"Analyzing: {current}/{total}")
+        self.progress_bar.setFormat(f"Analyzing: {current}/{total} ({percentage:.1f}%)")
+        self.statusBar().showMessage(f"Analyzing tracks: {current}/{total} ({percentage:.1f}%)")
         
         if current >= total:
             self.progress_bar.setVisible(False)

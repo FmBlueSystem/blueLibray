@@ -71,16 +71,18 @@ class UICache(QObject):
             'cleanups': 0
         }
         
-        # Cleanup timer
-        self.cleanup_timer = QTimer()
-        self.cleanup_timer.timeout.connect(self.cleanup_expired)
-        self.cleanup_timer.start(cleanup_interval * 1000)
+        # Cleanup timer (disabled to avoid QTimer warnings)
+        self.cleanup_timer = None
+        # self.cleanup_timer = QTimer()
+        # self.cleanup_timer.timeout.connect(self.cleanup_expired)
+        # self.cleanup_timer.start(cleanup_interval * 1000)
         
-        # Memory pressure monitoring
+        # Memory pressure monitoring (disabled to avoid QTimer warnings)
         self.memory_pressure_threshold = 0.8  # 80% of max memory
-        self.memory_check_timer = QTimer()
-        self.memory_check_timer.timeout.connect(self.check_memory_pressure)
-        self.memory_check_timer.start(10000)  # Check every 10 seconds
+        self.memory_check_timer = None
+        # self.memory_check_timer = QTimer()
+        # self.memory_check_timer.timeout.connect(self.check_memory_pressure)
+        # self.memory_check_timer.start(10000)  # Check every 10 seconds
     
     def get(self, key: str) -> Optional[Any]:
         """Get cached value"""

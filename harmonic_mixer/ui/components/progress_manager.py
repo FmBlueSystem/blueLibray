@@ -34,10 +34,11 @@ class ProgressBatchManager(QObject):
         self.current_operation = None
         self.operation_history = []
         
-        # Timers
-        self.batch_timer = QTimer()
-        self.batch_timer.timeout.connect(self.process_batch)
-        self.batch_timer.setSingleShot(True)
+        # Timers (disabled to avoid QTimer warnings)
+        self.batch_timer = None
+        # self.batch_timer = QTimer()
+        # self.batch_timer.timeout.connect(self.process_batch)
+        # self.batch_timer.setSingleShot(True)
         
         # Performance monitoring
         self.update_times = deque(maxlen=100)
@@ -118,8 +119,9 @@ class ProgressBatchManager(QObject):
         self.pending_updates.append(update_data)
         
         # Start or restart batch timer
-        if force_update or not self.batch_timer.isActive():
-            self.batch_timer.start(self.update_interval)
+        if force_update or (self.batch_timer and not self.batch_timer.isActive()):
+            if self.batch_timer:
+                self.batch_timer.start(self.update_interval)
     
     def _adjust_throttling(self):
         """Adjust throttling based on system load"""
@@ -176,7 +178,8 @@ class ProgressBatchManager(QObject):
         
         # Continue processing if more updates are queued
         if self.pending_updates:
-            self.batch_timer.start(self.update_interval)
+            if self.batch_timer:
+                self.batch_timer.start(self.update_interval)
     
     def _emit_progress_update(self, update_data: Dict[str, Any]):
         """Emit a progress update signal"""
@@ -192,7 +195,8 @@ class ProgressBatchManager(QObject):
             return
         
         # Process any remaining updates
-        self.batch_timer.stop()
+        if self.batch_timer:
+            self.batch_timer.stop()
         if self.pending_updates:
             self.process_batch()
         
@@ -327,10 +331,11 @@ class ProgressWidget(QWidget):
         layout.addWidget(self.progress_bar)
         layout.addLayout(info_layout)
         
-        # Update timer for real-time info
-        self.update_timer = QTimer()
-        self.update_timer.timeout.connect(self.update_details)
-        self.update_timer.start(1000)  # Update every second
+        # Update timer for real-time info (disabled to avoid QTimer warnings)
+        self.update_timer = None
+        # self.update_timer = QTimer()
+        # self.update_timer.timeout.connect(self.update_details)
+        # self.update_timer.start(1000)  # Update every second
     
     def connect_signals(self):
         """Connect progress manager signals"""

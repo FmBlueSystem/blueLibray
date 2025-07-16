@@ -65,7 +65,7 @@ def test_load_folder_functionality():
             print("   ✅ load_music_folder method exists")
         else:
             print("   ❌ load_music_folder method missing")
-            return False
+            assert False
             
         # Check if signal handlers exist
         handlers = ['on_load_failed', 'on_load_completed', 'on_track_from_thread', 'on_load_progress']
@@ -77,7 +77,7 @@ def test_load_folder_functionality():
         
         if missing_handlers:
             print(f"   ❌ Missing signal handlers: {missing_handlers}")
-            return False
+            assert False
         else:
             print("   ✅ All signal handlers present")
         
@@ -94,10 +94,10 @@ def test_load_folder_functionality():
                 print("   ✅ facade.load_music_folder is async")
             else:
                 print("   ❌ facade.load_music_folder is not async")
-                return False
+                assert False
         else:
             print("   ❌ facade.load_music_folder method missing")
-            return False
+            assert False
         
         print(f"\n🎯 SUCCESS: Load folder functionality is working!")
         print(f"   • AsyncLoadThread: ✅ Working")
@@ -106,13 +106,14 @@ def test_load_folder_functionality():
         print(f"   • Signal handlers: ✅ Working")
         print(f"   • Async facade method: ✅ Working")
         
-        return True
+        # Return None as expected by pytest
+        assert True
         
     except Exception as e:
         print(f"❌ Load folder test failed: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        assert False
 
 if __name__ == "__main__":
     success = test_load_folder_functionality()

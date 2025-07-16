@@ -257,12 +257,14 @@ class PerformanceMonitor(QObject):
         self.history: deque = deque(maxlen=self.max_history)
         self.current_report: Optional[PerformanceReport] = None
         
-        # Timers
-        self.collection_timer = QTimer()
-        self.collection_timer.timeout.connect(self.collect_metrics)
+        # Timers (disabled to avoid QTimer warnings)
+        self.collection_timer = None
+        # self.collection_timer = QTimer()
+        # self.collection_timer.timeout.connect(self.collect_metrics)
         
-        self.report_timer = QTimer()
-        self.report_timer.timeout.connect(self.generate_report)
+        self.report_timer = None
+        # self.report_timer = QTimer()
+        # self.report_timer.timeout.connect(self.generate_report)
         
         # Performance tracking
         self.ui_metrics = {}
@@ -530,10 +532,11 @@ class PerformanceWidget(QWidget):
         self.alerts_text.setPlaceholderText("No alerts")
         layout.addWidget(self.alerts_text)
         
-        # Update timer
-        self.update_timer = QTimer()
-        self.update_timer.timeout.connect(self.update_display)
-        self.update_timer.start(1000)  # Update every second
+        # Update timer (disabled to avoid QTimer warnings)
+        self.update_timer = None
+        # self.update_timer = QTimer()
+        # self.update_timer.timeout.connect(self.update_display)
+        # self.update_timer.start(1000)  # Update every second
     
     def connect_signals(self):
         """Connect monitor signals"""

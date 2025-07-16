@@ -198,10 +198,9 @@ class SearchFilterWidget(BaseUIComponent):
         
         super().__init__(facade, parent)
         
-        # Search delay timer
-        self.search_delay_timer = QTimer()
-        self.search_delay_timer.setSingleShot(True)
-        self.search_delay_timer.timeout.connect(self.perform_search)
+        # Search delay using QTimer.singleShot (no persistent timer needed)
+        self.search_delay_timer = None  # Not needed with singleShot approach
+        self._pending_search = False
         
         # Performance monitoring
         self.search_times = []
@@ -463,19 +462,21 @@ class SearchFilterWidget(BaseUIComponent):
         """Handle search input changes"""
         self.current_search = text
         
-        # Delay search to avoid excessive operations
-        self.search_delay_timer.stop()
-        self.search_delay_timer.start(300)  # 300ms delay
+        # Delay search to avoid excessive operations using singleShot
+        self._pending_search = True
+        QTimer.singleShot(300, self._perform_delayed_search)  # 300ms delay
     
     def on_filter_changed(self):
         """Handle filter changes"""
-        self.search_delay_timer.stop()
-        self.search_delay_timer.start(100)  # Shorter delay for filters
+        # Use shorter delay for filters using singleShot
+        self._pending_search = True
+        QTimer.singleShot(100, self._perform_delayed_search)  # Shorter delay for filters
     
     def on_quick_filter_changed(self):
         """Handle quick filter button changes"""
-        self.search_delay_timer.stop()
-        self.search_delay_timer.start(100)
+        # Use singleShot for quick filter changes
+        self._pending_search = True
+        QTimer.singleShot(100, self._perform_delayed_search)
     
     def clear_search(self):
         """Clear all search and filters"""
@@ -625,5 +626,12 @@ class SearchFilterWidget(BaseUIComponent):
             self.search_worker.stop()
             self.search_worker.wait()
         
-        self.search_delay_timer.stop()
+        # Cancel any pending searches
+        self._pending_search = False
         super().cleanup()
+
+    def _perform_delayed_search(self):
+        """Perform search only if it's still pending (not superseded by newer search)"""
+        if self._pending_search:
+            self._pending_search = False
+            self.perform_search()
