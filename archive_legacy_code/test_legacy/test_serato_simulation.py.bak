@@ -1,0 +1,259 @@
+#!/usr/bin/env python3
+"""
+Serato Export Simulation Test
+
+Since Serato DJ is not installed, we'll simulate the export process
+to validate the crate generation and file format compatibility.
+"""
+
+import os
+import sys
+import asyncio
+import tempfile
+from pathlib import Path
+from typing import List, Dict
+
+# Add the project root to sys.path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from harmonic_mixer.core.application_facade import BlueLibraryFacade
+from harmonic_mixer.integrations.serato_export_plugin import SeratoExportPlugin
+from harmonic_mixer.core.harmonic_engine import Track
+
+try:
+    from pyserato.model.crate import Crate
+    from pyserato.model.track import Track as SeratoTrack
+    from pyserato.builder import Builder
+    PYSERATO_AVAILABLE = True
+except ImportError:
+    PYSERATO_AVAILABLE = False
+
+class SeratoSimulationTester:
+    def __init__(self):
+        self.facade = BlueLibraryFacade()
+        self.serato_plugin = SeratoExportPlugin()
+        self.test_tracks = []
+        self.temp_dir = None
+        
+    async def test_serato_crate_generation(self):
+        """Test Serato crate generation in simulation mode"""
+        print("🎵 Testing Serato Crate Generation (Simulation Mode)")
+        print("=" * 60)
+        
+        # 1. Check pyserato availability
+        print("\n1. Checking PySerato Library...")
+        try:
+            if not PYSERATO_AVAILABLE:
+                print("   ❌ PySerato not available - cannot test crate generation")
+                return False
+                
+            print("   ✅ PySerato library available")
+            print(f"   📦 Crate class: {Crate}")
+            print(f"   📦 SeratoTrack class: {SeratoTrack}")
+            print(f"   📦 Builder class: {Builder}")
+            
+        except Exception as e:
+            print(f"   ❌ PySerato check failed: {e}")
+            return False
+            
+        # 2. Load test tracks
+        print("\n2. Loading Test Tracks...")
+        try:
+            test_audio_path = Path("test_data")
+            if not test_audio_path.exists():
+                print("   ❌ Test audio directory not found")
+                return False
+            
+            await self.facade.load_music_folder(str(test_audio_path))
+            tracks = self.facade.get_tracks()
+            print(f"   📂 Loaded {len(tracks)} test tracks")
+            
+            # Get a subset for testing
+            self.test_tracks = tracks[:10]  # First 10 tracks
+            print(f"   📀 Using {len(self.test_tracks)} tracks for testing")
+            
+            for i, track in enumerate(self.test_tracks[:3]):
+                print(f"      {i+1}. {track.title}")
+                print(f"         Path: {track.filepath}")
+                print(f"         Key: {track.key}, BPM: {track.bpm}")
+            
+        except Exception as e:
+            print(f"   ❌ Track loading failed: {e}")
+            return False
+            
+        # 3. Generate playlist
+        print("\n3. Generating Test Playlist...")
+        try:
+            playlist = self.facade.generate_playlist(
+                target_length=5,
+                start_track_id=self.test_tracks[0].id
+            )
+            
+            if not playlist:
+                print("   ❌ Playlist generation failed")
+                return False
+                
+            print(f"   📋 Generated playlist with {len(playlist)} tracks")
+            for i, track in enumerate(playlist):
+                print(f"      {i+1}. {track.title} ({track.key}, {track.bpm} BPM)")
+            
+        except Exception as e:
+            print(f"   ❌ Playlist generation failed: {e}")
+            return False
+            
+        # 4. Test crate creation
+        print("\n4. Testing Serato Crate Creation...")
+        try:
+            # Create a temporary directory for testing
+            self.temp_dir = tempfile.mkdtemp(prefix="serato_test_")
+            print(f"   📁 Using temp directory: {self.temp_dir}")
+            
+            # Test the internal crate creation method
+            crate_name = "BlueLibrary_Test_Crate"
+            crate = self.serato_plugin._create_serato_crate(playlist, crate_name)
+            
+            print(f"   📦 Created crate: {crate.name}")
+            print(f"   📀 Crate has {len(crate.tracks)} tracks")
+            
+            # Show track details (crate.tracks is a set, not a list)
+            tracks_list = list(crate.tracks)
+            for i, serato_track in enumerate(tracks_list[:3]):
+                print(f"      {i+1}. Path: {serato_track.path}")
+                
+        except Exception as e:
+            print(f"   ❌ Crate creation failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+            
+        # 5. Test crate file writing
+        print("\n5. Testing Crate File Writing...")
+        try:
+            # Create a subcrates directory like Serato
+            subcrates_dir = Path(self.temp_dir) / "Subcrates"
+            subcrates_dir.mkdir(exist_ok=True)
+            
+            # Use pyserato Builder to write the crate
+            builder = Builder()
+            
+            # Save crate to subcrates directory
+            builder.save(crate, subcrates_dir, overwrite=True)
+            
+            # Check if file was created
+            expected_crate_file = subcrates_dir / f"{crate_name}.crate"
+            alternative_crate_file = subcrates_dir / "SubCrates" / f"{crate_name}.crate"
+            
+            crate_file_created = None
+            if expected_crate_file.exists():
+                crate_file_created = expected_crate_file
+            elif alternative_crate_file.exists():
+                crate_file_created = alternative_crate_file
+            
+            if crate_file_created:
+                print(f"   ✅ Crate file created: {crate_file_created}")
+                print(f"   📊 File size: {crate_file_created.stat().st_size} bytes")
+                
+                # Read first few bytes to validate format
+                with open(crate_file_created, 'rb') as f:
+                    header = f.read(16)
+                    print(f"   🔍 File header: {header}")
+                    
+            else:
+                print(f"   ❌ Crate file not found")
+                print(f"   📂 Contents of {subcrates_dir}:")
+                for item in subcrates_dir.iterdir():
+                    print(f"      - {item}")
+                return False
+                
+        except Exception as e:
+            print(f"   ❌ Crate file writing failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+            
+        # 6. Test path formatting
+        print("\n6. Testing Path Formatting...")
+        try:
+            test_paths = [
+                str(Path(self.test_tracks[0].filepath)),
+                str(Path(self.test_tracks[1].filepath).absolute()),
+                str(Path(self.test_tracks[2].filepath).resolve())
+            ]
+            
+            for i, path in enumerate(test_paths):
+                formatted = self.serato_plugin._format_track_path_for_serato(path)
+                print(f"   {i+1}. Original: {path}")
+                print(f"      Formatted: {formatted}")
+                print(f"      Valid: {formatted is not None}")
+                
+        except Exception as e:
+            print(f"   ❌ Path formatting failed: {e}")
+            return False
+            
+        # 7. Test export simulation
+        print("\n7. Testing Export Simulation...")
+        try:
+            # Simulate export with custom library path
+            export_result = self.serato_plugin.export_playlist(
+                playlist,
+                "BlueLibrary_Simulation_Test",
+                options={
+                    'library_path': self.temp_dir,
+                    'create_backup': False,
+                    'overwrite_existing': True
+                }
+            )
+            
+            print(f"   📤 Export simulation result:")
+            print(f"      • Success: {export_result.success}")
+            print(f"      • Tracks exported: {export_result.tracks_exported}")
+            print(f"      • Error: {export_result.error_message}")
+            
+            if export_result.success:
+                print(f"      • Crate path: {export_result.crate_path}")
+                print("   ✅ Export simulation successful")
+            else:
+                print("   ⚠️  Export simulation failed (expected without real Serato)")
+                
+        except Exception as e:
+            print(f"   ❌ Export simulation failed: {e}")
+            return False
+            
+        return True
+        
+    async def cleanup(self):
+        """Clean up test resources"""
+        try:
+            if self.temp_dir and Path(self.temp_dir).exists():
+                import shutil
+                shutil.rmtree(self.temp_dir)
+                print(f"   🧹 Cleaned up temp directory: {self.temp_dir}")
+        except Exception as e:
+            print(f"   ⚠️  Cleanup warning: {e}")
+
+async def main():
+    """Run the Serato simulation test"""
+    tester = SeratoSimulationTester()
+    
+    try:
+        success = await tester.test_serato_crate_generation()
+        
+        print("\n" + "=" * 60)
+        if success:
+            print("🎉 SERATO SIMULATION TEST: SUCCESS!")
+            print("   Crate generation and file format compatibility validated")
+        else:
+            print("❌ SERATO SIMULATION TEST: FAILED!")
+            print("   Some functionality needs attention")
+            
+    except Exception as e:
+        print(f"\n❌ SERATO SIMULATION TEST: EXCEPTION!")
+        print(f"   Error: {e}")
+        import traceback
+        traceback.print_exc()
+        
+    finally:
+        await tester.cleanup()
+
+if __name__ == "__main__":
+    asyncio.run(main())

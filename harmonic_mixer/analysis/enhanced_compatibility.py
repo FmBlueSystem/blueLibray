@@ -22,12 +22,12 @@ except ImportError:
         pass
     STRUCTURAL_ANALYSIS_AVAILABLE = False
 
-# Import stylistic compatibility
-try:
-    from .stylistic_compatibility import StylisticCompatibilityMatrix, StyleProfile
-    STYLISTIC_ANALYSIS_AVAILABLE = True
-except ImportError:
-    STYLISTIC_ANALYSIS_AVAILABLE = False
+# Stylistic compatibility module archived - using basic fallback
+# try:
+#     from .stylistic_compatibility import StylisticCompatibilityMatrix, StyleProfile
+#     STYLISTIC_ANALYSIS_AVAILABLE = True
+# except ImportError:
+STYLISTIC_ANALYSIS_AVAILABLE = False
 
 
 @dataclass

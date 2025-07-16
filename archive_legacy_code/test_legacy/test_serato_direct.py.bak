@@ -1,0 +1,144 @@
+#!/usr/bin/env python3
+"""
+Direct Serato Crate Creation Test
+
+Create a Serato crate file directly and test its validity
+"""
+
+import os
+import sys
+import tempfile
+from pathlib import Path
+
+# Add the project root to sys.path
+sys.path.insert(0, str(Path(__file__).parent))
+
+try:
+    from pyserato.model.crate import Crate
+    from pyserato.model.track import Track as SeratoTrack
+    from pyserato.builder import Builder
+    PYSERATO_AVAILABLE = True
+except ImportError:
+    PYSERATO_AVAILABLE = False
+
+def test_direct_serato_crate():
+    """Test creating a Serato crate directly"""
+    print("🎵 Testing Direct Serato Crate Creation")
+    print("=" * 50)
+    
+    if not PYSERATO_AVAILABLE:
+        print("❌ PySerato not available")
+        return False
+    
+    try:
+        # Create a temporary directory
+        temp_dir = tempfile.mkdtemp(prefix="serato_direct_test_")
+        print(f"📁 Using temp directory: {temp_dir}")
+        
+        # Create a crate
+        crate = Crate("BlueLibrary_Direct_Test")
+        print(f"📦 Created crate: {crate.name}")
+        
+        # Find some test audio files
+        test_audio_path = Path("test_data")
+        if not test_audio_path.exists():
+            print("❌ Test audio directory not found")
+            return False
+        
+        # Get first 3 audio files
+        audio_files = list(test_audio_path.rglob("*.wav"))[:3]
+        print(f"📀 Found {len(audio_files)} test audio files")
+        
+        # Add tracks to crate
+        for i, audio_file in enumerate(audio_files):
+            try:
+                # Get absolute path
+                abs_path = str(audio_file.resolve())
+                print(f"   {i+1}. Adding: {abs_path}")
+                
+                # Create Serato track
+                serato_track = SeratoTrack(abs_path)
+                crate.add_track(serato_track)
+                print(f"      ✅ Added successfully")
+                
+            except Exception as e:
+                print(f"      ❌ Failed to add: {e}")
+        
+        print(f"📋 Crate now has {len(crate.tracks)} tracks")
+        
+        # Create subcrates directory
+        subcrates_dir = Path(temp_dir) / "Subcrates"
+        subcrates_dir.mkdir(exist_ok=True)
+        
+        # Save crate
+        print("💾 Saving crate...")
+        builder = Builder()
+        builder.save(crate, subcrates_dir, overwrite=True)
+        
+        # Check if file was created
+        possible_paths = [
+            subcrates_dir / f"{crate.name}.crate",
+            subcrates_dir / "SubCrates" / f"{crate.name}.crate"
+        ]
+        
+        crate_file = None
+        for path in possible_paths:
+            if path.exists():
+                crate_file = path
+                break
+        
+        if crate_file:
+            print(f"✅ Crate file created: {crate_file}")
+            print(f"📊 File size: {crate_file.stat().st_size} bytes")
+            
+            # Read and display first few bytes
+            with open(crate_file, 'rb') as f:
+                header = f.read(32)
+                print(f"🔍 File header: {header}")
+                
+            # Try to read it back
+            print("🔄 Testing crate file reading...")
+            try:
+                read_crate = builder.load(crate_file)
+                print(f"📦 Read crate: {read_crate.name}")
+                print(f"📀 Tracks in read crate: {len(read_crate.tracks)}")
+                
+                # Show track paths
+                for i, track in enumerate(list(read_crate.tracks)[:3]):
+                    print(f"   {i+1}. {track.path}")
+                    
+                print("✅ Crate file is valid and readable")
+                
+            except Exception as e:
+                print(f"❌ Could not read crate file: {e}")
+                
+        else:
+            print("❌ Crate file was not created")
+            print("📂 Directory contents:")
+            for item in subcrates_dir.rglob("*"):
+                print(f"   {item}")
+            return False
+        
+        # Cleanup
+        import shutil
+        shutil.rmtree(temp_dir)
+        print(f"🧹 Cleaned up: {temp_dir}")
+        
+        return True
+        
+    except Exception as e:
+        print(f"❌ Test failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+if __name__ == "__main__":
+    success = test_direct_serato_crate()
+    
+    print("\n" + "=" * 50)
+    if success:
+        print("🎉 DIRECT SERATO CRATE TEST: SUCCESS!")
+        print("   Crate files can be created and are valid")
+    else:
+        print("❌ DIRECT SERATO CRATE TEST: FAILED!")
+        print("   Crate creation has issues")

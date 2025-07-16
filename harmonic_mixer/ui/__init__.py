@@ -1,3 +1,3 @@
 """User interface module"""
 
-from .main_window import MainWindow
+from .main_window_clean import MainWindow

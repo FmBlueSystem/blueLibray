@@ -7,14 +7,15 @@ import random
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 from ..core.harmonic_engine import Track, HarmonicMixingEngine
-from .contextual_curves import ContextualMixingEngine, ContextualCurve
+# Contextual curves module archived - using basic implementation
+# from .contextual_curves import ContextualMixingEngine, ContextualCurve
 
-# Import stylistic compatibility with fallback
-try:
-    from .stylistic_compatibility import StylisticCompatibilityMatrix
-    STYLISTIC_AVAILABLE = True
-except ImportError:
-    STYLISTIC_AVAILABLE = False
+# Stylistic compatibility module archived - using basic fallback
+# try:
+#     from .stylistic_compatibility import StylisticCompatibilityMatrix
+#     STYLISTIC_AVAILABLE = True
+# except ImportError:
+STYLISTIC_AVAILABLE = False
 
 
 @dataclass

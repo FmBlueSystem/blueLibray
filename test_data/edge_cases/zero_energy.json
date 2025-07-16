@@ -1,0 +1,10 @@
+{
+  "title": "Zero Energy",
+  "artist": "Test Artist Ambient",
+  "album": "BlueLibrary Test Ambient",
+  "genre": "Ambient",
+  "bpm": 120,
+  "key": "A minor (8A)",
+  "camelot_key": "8A",
+  "energy": 0.1
+}

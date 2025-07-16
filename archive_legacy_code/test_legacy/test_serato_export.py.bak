@@ -1,0 +1,251 @@
+#!/usr/bin/env python3
+"""
+Test Serato Playlist Export Functionality
+
+Test complete workflow:
+1. Initialize Serato export plugin
+2. Load test audio files
+3. Generate playlist
+4. Export to Serato format
+5. Verify export results
+"""
+
+import os
+import sys
+import asyncio
+import tempfile
+from pathlib import Path
+from typing import List, Dict
+
+# Add the project root to sys.path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from harmonic_mixer.core.application_facade import BlueLibraryFacade
+from harmonic_mixer.integrations.serato_export_plugin import SeratoExportPlugin
+from harmonic_mixer.integrations.serato_detector import quick_serato_check
+from harmonic_mixer.core.harmonic_engine import Track
+
+class SeratoExportTester:
+    def __init__(self):
+        self.facade = BlueLibraryFacade()
+        self.serato_plugin = SeratoExportPlugin()
+        self.test_tracks = []
+        
+    async def test_serato_export_workflow(self):
+        """Test complete Serato export workflow"""
+        print("🎵 Testing Serato Export Workflow")
+        print("=" * 50)
+        
+        # 1. Test Serato detection
+        print("\n1. Testing Serato Detection...")
+        try:
+            status = quick_serato_check()
+            print(f"   📊 Serato Status:")
+            print(f"      • Library found: {status.get('library_found', False)}")
+            print(f"      • Library path: {status.get('library_path', 'None')}")
+            print(f"      • Serato running: {status.get('serato_running', False)}")
+            print(f"      • Safe to modify: {status.get('safe_to_modify', False)}")
+            
+            if status.get('running_processes'):
+                print(f"      • Running processes: {', '.join(status.get('running_processes', []))}")
+            
+            print("   ✅ Serato detection completed")
+            
+        except Exception as e:
+            print(f"   ❌ Serato detection failed: {e}")
+            return False
+            
+        # 2. Test plugin availability
+        print("\n2. Testing Plugin Availability...")
+        try:
+            plugin_available = self.serato_plugin.is_available()
+            print(f"   📦 Plugin available: {plugin_available}")
+            
+            plugin_status = self.serato_plugin.get_status_info()
+            print(f"   📊 Plugin Status:")
+            for key, value in plugin_status.items():
+                print(f"      • {key}: {value}")
+            
+            if plugin_available:
+                print("   ✅ Plugin is available")
+            else:
+                print("   ⚠️  Plugin not available (this is expected if Serato is not installed)")
+                
+        except Exception as e:
+            print(f"   ❌ Plugin availability check failed: {e}")
+            return False
+            
+        # 3. Test requirements check
+        print("\n3. Testing Requirements...")
+        try:
+            requirements = self.serato_plugin.get_requirements()
+            print(f"   📋 Requirements:")
+            for req, desc in requirements.items():
+                print(f"      • {req}: {desc}")
+            
+            pre_check = self.serato_plugin.pre_export_check()
+            print(f"   🔍 Pre-export Check:")
+            print(f"      • Can export: {pre_check['can_export']}")
+            if pre_check['issues']:
+                print(f"      • Issues: {', '.join(pre_check['issues'])}")
+            if pre_check['warnings']:
+                print(f"      • Warnings: {', '.join(pre_check['warnings'])}")
+            
+            print("   ✅ Requirements check completed")
+            
+        except Exception as e:
+            print(f"   ❌ Requirements check failed: {e}")
+            return False
+            
+        # 4. Load test audio files
+        print("\n4. Loading Test Audio Files...")
+        try:
+            test_audio_path = Path("test_data")
+            if not test_audio_path.exists():
+                print("   ❌ Test audio directory not found")
+                return False
+            
+            # Load test tracks
+            await self.facade.load_music_folder(str(test_audio_path))
+            tracks = self.facade.get_tracks()
+            print(f"   📂 Loaded {len(tracks)} test tracks")
+            
+            if len(tracks) == 0:
+                print("   ❌ No tracks loaded")
+                return False
+            
+            # Show some examples
+            print(f"   📀 Example tracks:")
+            for i, track in enumerate(tracks[:3]):
+                print(f"      {i+1}. {track.title} ({track.key}, {track.bpm} BPM)")
+            
+            self.test_tracks = tracks
+            print("   ✅ Test tracks loaded successfully")
+            
+        except Exception as e:
+            print(f"   ❌ Test audio loading failed: {e}")
+            return False
+            
+        # 5. Generate test playlist
+        print("\n5. Generating Test Playlist...")
+        try:
+            # Generate a small playlist
+            playlist = self.facade.generate_playlist(
+                target_length=5,
+                start_track_id=self.test_tracks[0].id
+            )
+            
+            if playlist:
+                print(f"   📋 Generated playlist with {len(playlist)} tracks:")
+                for i, track in enumerate(playlist):
+                    print(f"      {i+1}. {track.title} ({track.key}, {track.bpm} BPM)")
+                print("   ✅ Playlist generation successful")
+            else:
+                print("   ❌ Playlist generation failed")
+                return False
+                
+        except Exception as e:
+            print(f"   ❌ Playlist generation failed: {e}")
+            return False
+            
+        # 6. Test export options
+        print("\n6. Testing Export Options...")
+        try:
+            export_options = self.serato_plugin.get_export_options()
+            print(f"   ⚙️  Available export options:")
+            for option, config in export_options.items():
+                print(f"      • {option}: {config['description']} (default: {config['default']})")
+            
+            print("   ✅ Export options retrieved")
+            
+        except Exception as e:
+            print(f"   ❌ Export options failed: {e}")
+            return False
+            
+        # 7. Test actual export (if possible)
+        print("\n7. Testing Serato Export...")
+        try:
+            # Test with a temporary/safe playlist name
+            test_playlist_name = "BlueLibrary_Test_Export"
+            
+            # Attempt export
+            export_result = self.serato_plugin.export_playlist(
+                playlist,
+                test_playlist_name,
+                options={
+                    'create_backup': True,
+                    'overwrite_existing': True
+                }
+            )
+            
+            print(f"   📤 Export Result:")
+            print(f"      • Success: {export_result.success}")
+            print(f"      • Tracks exported: {export_result.tracks_exported}")
+            
+            if export_result.success:
+                print(f"      • Crate path: {export_result.crate_path}")
+                print(f"      • Backup path: {export_result.backup_path}")
+                print(f"      • Library path: {export_result.library_path}")
+                print("   ✅ Export successful!")
+            else:
+                print(f"      • Error: {export_result.error_message}")
+                print("   ⚠️  Export failed (this is expected if Serato is not properly configured)")
+                
+        except Exception as e:
+            print(f"   ❌ Export test failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return False
+            
+        # 8. Test existing crates listing
+        print("\n8. Testing Existing Crates Listing...")
+        try:
+            existing_crates = self.serato_plugin.list_existing_crates()
+            print(f"   📁 Found {len(existing_crates)} existing crates")
+            
+            if existing_crates:
+                print(f"   📀 Example crates:")
+                for i, crate in enumerate(existing_crates[:5]):
+                    print(f"      {i+1}. {crate}")
+            
+            print("   ✅ Crates listing completed")
+            
+        except Exception as e:
+            print(f"   ❌ Crates listing failed: {e}")
+            return False
+            
+        return True
+        
+    async def cleanup(self):
+        """Clean up test resources"""
+        try:
+            print("   🧹 Cleaning up test resources")
+        except Exception as e:
+            print(f"   ⚠️  Cleanup warning: {e}")
+
+async def main():
+    """Run the Serato export test"""
+    tester = SeratoExportTester()
+    
+    try:
+        success = await tester.test_serato_export_workflow()
+        
+        print("\n" + "=" * 50)
+        if success:
+            print("🎉 SERATO EXPORT TEST: SUCCESS!")
+            print("   All export functionality is working correctly")
+        else:
+            print("❌ SERATO EXPORT TEST: FAILED!")
+            print("   Some functionality needs attention")
+            
+    except Exception as e:
+        print(f"\n❌ SERATO EXPORT TEST: EXCEPTION!")
+        print(f"   Error: {e}")
+        import traceback
+        traceback.print_exc()
+        
+    finally:
+        await tester.cleanup()
+
+if __name__ == "__main__":
+    asyncio.run(main())
