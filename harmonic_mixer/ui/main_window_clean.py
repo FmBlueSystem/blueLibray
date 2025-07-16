@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
 from PyQt6.QtGui import QAction, QIcon, QFont, QPixmap
+import asyncio
 
 # Core imports
 from harmonic_mixer.core.application_facade import BlueLibraryFacade
@@ -31,6 +32,55 @@ from harmonic_mixer.ui.tabbed_control_panel import TabbedControlPanel
 from harmonic_mixer.ui.compact_toolbar import CompactToolbar
 from harmonic_mixer.ui.reorganized_ui_styles import ReorganizedUIStyles
 from harmonic_mixer.ui.components.main_window_integration import OptimizedTrackView
+
+
+class AsyncLoadThread(QThread):
+    """Thread for async folder loading"""
+    load_failed = pyqtSignal()
+    load_completed = pyqtSignal()
+    track_analyzed = pyqtSignal(Track)
+    progress_updated = pyqtSignal(int, int)
+    
+    def __init__(self, facade, folder):
+        super().__init__()
+        self.facade = facade
+        self.folder = folder
+    
+    def run(self):
+        import asyncio
+        from harmonic_mixer.core.event_system import event_manager, EventType
+        
+        # Set up event handlers to capture events and emit Qt signals
+        def on_track_analyzed(event):
+            self.track_analyzed.emit(event.data)
+        
+        def on_progress(event):
+            data = event.data
+            self.progress_updated.emit(data['current'], data['total'])
+        
+        # Subscribe to events temporarily
+        event_manager.event_bus.subscribe(EventType.TRACK_ANALYZED, on_track_analyzed)
+        event_manager.event_bus.subscribe(EventType.ANALYSIS_PROGRESS, on_progress)
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            # Create progress callback
+            def progress_callback(current, total):
+                event_manager.analysis_progress(current, total)
+            
+            result = loop.run_until_complete(
+                self.facade.load_music_folder(self.folder, progress_callback)
+            )
+            if result:
+                self.load_completed.emit()
+            else:
+                self.load_failed.emit()
+        finally:
+            # Unsubscribe from events
+            event_manager.event_bus.unsubscribe(EventType.TRACK_ANALYZED, on_track_analyzed)
+            event_manager.event_bus.unsubscribe(EventType.ANALYSIS_PROGRESS, on_progress)
+            loop.close()
 
 class MainWindow(QMainWindow):
     """
@@ -204,8 +254,13 @@ class MainWindow(QMainWindow):
             self.progress_bar.setVisible(True)
             self.progress_bar.setRange(0, 0)  # Indeterminate
             
-            # Load through facade
-            self.facade.load_music_folder(folder)
+            # Start async loading thread
+            self.load_thread = AsyncLoadThread(self.facade, folder)
+            self.load_thread.load_failed.connect(self.on_load_failed)
+            self.load_thread.load_completed.connect(self.on_load_completed)
+            self.load_thread.track_analyzed.connect(self.on_track_from_thread)
+            self.load_thread.progress_updated.connect(self.on_load_progress)
+            self.load_thread.start()
     
     def clear_library(self):
         """Clear the music library"""
@@ -254,12 +309,28 @@ class MainWindow(QMainWindow):
             )
             return
         
+        # Check if LLM is configured
+        if not self.facade.is_llm_configured():
+            QMessageBox.warning(
+                self,
+                "LLM Not Configured",
+                "Please configure LLM settings first.\nGo to Settings → LLM Configuration"
+            )
+            return
+        
         self.statusBar().showMessage("Enhancing tracks with AI...")
         self.progress_bar.setVisible(True)
         self.progress_bar.setRange(0, len(selected_tracks))
         
-        # Enhance through facade
-        self.facade.enhance_tracks(selected_tracks)
+        # For now, show message that enhancement is not implemented in clean UI
+        QMessageBox.information(
+            self,
+            "Enhancement Not Implemented",
+            "Track enhancement is not yet implemented in the clean UI.\nPlease use the full UI for LLM enhancement features."
+        )
+        
+        self.progress_bar.setVisible(False)
+        self.statusBar().showMessage("Enhancement not available in clean UI")
     
     def toggle_playback(self):
         """Toggle playback state"""
@@ -268,11 +339,14 @@ class MainWindow(QMainWindow):
             self.is_playing = False
             self.statusBar().showMessage("Playback paused")
         else:
-            current_track = self.track_view.get_current_track()
+            # Get current track from facade instead
+            current_track = self.facade.get_current_track()
             if current_track:
                 self.facade.play_track(current_track)
                 self.is_playing = True
                 self.statusBar().showMessage(f"Playing: {current_track.title}")
+            else:
+                self.statusBar().showMessage("No track selected")
     
     def stop_playback(self):
         """Stop playback"""
@@ -297,16 +371,43 @@ class MainWindow(QMainWindow):
         """Update track count in status bar"""
         self.track_count_label.setText(f"{count} tracks")
     
+    # Thread signal handlers
+    def on_load_failed(self):
+        """Handle load failed signal"""
+        self.progress_bar.setVisible(False)
+        self.statusBar().showMessage("Failed to load music folder")
+    
+    def on_load_completed(self):
+        """Handle load completed signal"""
+        self.progress_bar.setVisible(False)
+        self.statusBar().showMessage("Music folder loaded successfully")
+    
+    def on_track_from_thread(self, track: Track):
+        """Handle track analyzed signal from thread"""
+        self.track_view.add_track(track)
+        # Update track count using the track view's track list
+        track_count = len(self.track_view.tracks) if hasattr(self.track_view, 'tracks') else 0
+        self.update_track_count(track_count)
+    
+    def on_load_progress(self, current: int, total: int):
+        """Handle load progress updates"""
+        self.progress_bar.setRange(0, total)
+        self.progress_bar.setValue(current)
+        self.statusBar().showMessage(f"Loading tracks: {current}/{total}")
+    
+    
     # Event handlers
     def on_track_analyzed(self, event):
         """Handle track analyzed event"""
         track = event.data
         self.track_view.add_track(track)
-        self.update_track_count(self.track_view.get_track_count())
+        self.update_track_count(len(self.track_view.tracks))
     
     def on_analysis_progress(self, event):
         """Handle analysis progress event"""
-        current, total = event.data
+        data = event.data
+        current = data['current']
+        total = data['total']
         self.progress_bar.setValue(current)
         self.progress_bar.setMaximum(total)
         self.statusBar().showMessage(f"Analyzing: {current}/{total}")
