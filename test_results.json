@@ -4,14 +4,14 @@
     "successful_tests": 12,
     "failed_tests": 0,
     "success_rate": 100.0,
-    "total_duration": 0.056533098220825195,
-    "average_test_duration": 0.0047110915184021
+    "total_duration": 0.0674142837524414,
+    "average_test_duration": 0.005617856979370117
   },
   "test_results": [
     {
       "name": "facade_initialization",
       "success": true,
-      "duration": 0.043380022048950195,
+      "duration": 0.04213571548461914,
       "error": null,
       "details": {
         "harmonic_engine_initialized": true,
@@ -31,7 +31,7 @@
     {
       "name": "harmonic_compatibility",
       "success": true,
-      "duration": 3.62396240234375e-05,
+      "duration": 3.4809112548828125e-05,
       "error": null,
       "details": {
         "self_compatibility_8A": 1.0,
@@ -45,7 +45,7 @@
     {
       "name": "mix_modes",
       "success": true,
-      "duration": 2.288818359375e-05,
+      "duration": 2.1219253540039062e-05,
       "error": null,
       "details": {
         "classic": {
@@ -103,7 +103,7 @@
     {
       "name": "file_loading_key_2A_Eb_minor",
       "success": true,
-      "duration": 2.0503997802734375e-05,
+      "duration": 1.8358230590820312e-05,
       "error": null,
       "details": {
         "file_path": "test_data/keys/key_2A_Eb_minor.wav",
@@ -115,7 +115,7 @@
     {
       "name": "file_loading_key_2B_Fsharp_major",
       "success": true,
-      "duration": 1.1682510375976562e-05,
+      "duration": 1.0728836059570312e-05,
       "error": null,
       "details": {
         "file_path": "test_data/keys/key_2B_Fsharp_major.wav",
@@ -127,24 +127,24 @@
     {
       "name": "file_loading_bpm_170_8A_house",
       "success": true,
-      "duration": 1.0013580322265625e-05,
+      "duration": 9.298324584960938e-06,
       "error": null,
       "details": {
         "file_path": "test_data/tempos/bpm_170_8A_house.wav",
         "file_size_mb": 2.5234642028808594,
-        "analysis_time": 4.291534423828125e-06,
+        "analysis_time": 3.5762786865234375e-06,
         "error": "AudioAnalyzer.analyze_file() missing 1 required positional argument: 'track_id'"
       }
     },
     {
       "name": "file_loading_bpm_140_8A_house",
       "success": true,
-      "duration": 9.775161743164062e-06,
+      "duration": 9.059906005859375e-06,
       "error": null,
       "details": {
         "file_path": "test_data/tempos/bpm_140_8A_house.wav",
         "file_size_mb": 2.5234642028808594,
-        "analysis_time": 4.291534423828125e-06,
+        "analysis_time": 3.5762786865234375e-06,
         "error": "AudioAnalyzer.analyze_file() missing 1 required positional argument: 'track_id'"
       }
     },
@@ -168,43 +168,43 @@
       "details": {
         "folder_path": "test_data/keys",
         "success": true,
-        "duration": 0.011743545532226562,
+        "duration": 0.013181686401367188,
         "tracks_loaded": 24,
         "progress_updates": 1,
-        "tracks_per_second": 2043.675816144226
+        "tracks_per_second": 1820.7078570395022
       }
     },
     {
       "name": "performance_test",
       "success": true,
-      "duration": 0.0003204345703125,
+      "duration": 0.0003159046173095703,
       "error": null,
       "details": null
     },
     {
       "name": "edge_cases",
       "success": true,
-      "duration": 8.320808410644531e-05,
+      "duration": 7.843971252441406e-05,
       "error": null,
       "details": {
         "max_energy": {
           "success": false,
-          "analysis_time": 4.5299530029296875e-06,
+          "analysis_time": 4.291534423828125e-06,
           "metadata_found": false
         },
         "very_fast": {
           "success": false,
-          "analysis_time": 3.814697265625e-06,
+          "analysis_time": 3.337860107421875e-06,
           "metadata_found": false
         },
         "very_slow": {
           "success": false,
-          "analysis_time": 3.814697265625e-06,
+          "analysis_time": 3.337860107421875e-06,
           "metadata_found": false
         },
         "zero_energy": {
           "success": false,
-          "analysis_time": 3.5762786865234375e-06,
+          "analysis_time": 3.0994415283203125e-06,
           "metadata_found": false
         }
       }
@@ -212,11 +212,11 @@
     {
       "name": "memory_usage",
       "success": true,
-      "duration": 0.012628793716430664,
+      "duration": 0.02477121353149414,
       "error": null,
       "details": {
-        "memory_before_mb": 55.08984375,
-        "memory_after_mb": 55.21484375,
+        "memory_before_mb": 54.9453125,
+        "memory_after_mb": 55.0703125,
         "memory_increase_mb": 0.125,
         "tracks_loaded": 24
       }

@@ -6,10 +6,11 @@ An intelligent DJ mixing tool that goes beyond traditional Camelot wheel mixing 
 
 - **Advanced Harmonic Algorithm**: Multi-factor compatibility scoring beyond simple key matching
 - **Multiple Mixing Modes**:
-  - Intelligent Mode: Balanced approach using all factors
-  - Classic Camelot: Traditional harmonic mixing
-  - Energy Flow: Focus on energy progression
-  - Emotional: Prioritize emotional continuity
+  - Intelligent Mode: Balanced approach (Key 40%, BPM 30%, Energy 20%, Emotional 10%)
+  - Classic Camelot: Traditional harmonic mixing (Key 90%, BPM 10%)
+  - Energy Flow: Focus on energy progression (Key 20%, BPM 20%, Energy 50%, Emotional 10%)
+  - Emotional: Prioritize emotional continuity (Key 20%, BPM 10%, Energy 20%, Emotional 50%)
+  - Structural: Balanced analysis (Key 25%, BPM 25%, Energy 25%, Emotional 25%)
 - **Real-time Audio Analysis**: Automatic extraction of key, BPM, energy, and emotional intensity
 - **Customizable Weights**: Fine-tune the importance of each mixing factor
 - **Playlist Generation**: Create optimal playlists with customizable progression curves
@@ -66,12 +67,14 @@ python main.py
 
 ### Understanding the Algorithm
 
-The harmonic mixing engine evaluates track compatibility based on:
+The harmonic mixing engine evaluates track compatibility based on four factors with configurable weights:
 
 - **Key Compatibility** (40% default): Harmonic relationship between tracks
-- **BPM Compatibility** (30% default): Tempo matching within tolerance
-- **Energy Level** (20% default): Smooth energy transitions
-- **Emotional Intensity** (10% default): Maintaining emotional flow
+- **BPM Compatibility** (30% default): Tempo matching within ±3 BPM tolerance
+- **Energy Level** (20% default): Smooth energy transitions within ±2 levels
+- **Emotional Intensity** (10% default): Maintaining emotional flow continuity
+
+**Complete Algorithm Documentation:** See [ALGORITHM_DOCUMENTATION.md](ALGORITHM_DOCUMENTATION.md) for detailed technical specifications.
 
 ### Camelot Wheel Reference
 

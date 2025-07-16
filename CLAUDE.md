@@ -92,9 +92,12 @@ plugin_manager.register_plugin(CustomAlgorithm())
 ## Algorithm Modes
 
 - **Intelligent**: Balanced (key 40%, BPM 30%, energy 20%, emotional 10%)
-- **Classic Camelot**: Traditional (key 90%, BPM 10%)
-- **Energy Flow**: Energy focus (50%)
-- **Emotional**: Emotional continuity (50%)
+- **Classic Camelot**: Traditional (key 90%, BPM 10%, energy 0%, emotional 0%)
+- **Energy Flow**: Energy focus (key 20%, BPM 20%, energy 50%, emotional 10%)
+- **Emotional**: Emotional continuity (key 20%, BPM 10%, energy 20%, emotional 50%)
+- **Structural**: Balanced analysis (key 25%, BPM 25%, energy 25%, emotional 25%)
+
+**Note**: Structural mode is implemented but not exposed through the UI facade.
 
 ## Security
 - Path validation via `SecurityValidator`

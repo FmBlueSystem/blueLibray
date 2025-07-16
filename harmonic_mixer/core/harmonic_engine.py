@@ -90,7 +90,7 @@ class HarmonicMixingEngine:
             'emotional': 0.1
         }
         self.mode = MixMode.INTELLIGENT
-        self.bpm_tolerance = 6.0  # ±3 BPM acceptable
+        self.bpm_tolerance = 3.0  # ±3 BPM acceptable
         self.energy_tolerance = 2.0  # ±2 energy levels
         
         # Enhanced compatibility engine (lazy loaded)
