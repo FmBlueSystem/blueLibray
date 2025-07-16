@@ -1,0 +1,226 @@
+{
+  "summary": {
+    "total_tests": 12,
+    "successful_tests": 12,
+    "failed_tests": 0,
+    "success_rate": 100.0,
+    "total_duration": 0.056533098220825195,
+    "average_test_duration": 0.0047110915184021
+  },
+  "test_results": [
+    {
+      "name": "facade_initialization",
+      "success": true,
+      "duration": 0.043380022048950195,
+      "error": null,
+      "details": {
+        "harmonic_engine_initialized": true,
+        "database_initialized": true,
+        "state_initialized": true,
+        "analysis_manager_initialized": true,
+        "current_mix_mode": "Emotional",
+        "algorithm_weights": {
+          "key": 0.2,
+          "bpm": 0.1,
+          "energy": 0.2,
+          "emotional": 0.5
+        },
+        "tracks_count": 0
+      }
+    },
+    {
+      "name": "harmonic_compatibility",
+      "success": true,
+      "duration": 3.62396240234375e-05,
+      "error": null,
+      "details": {
+        "self_compatibility_8A": 1.0,
+        "compatibility_8A_8B": 0.96,
+        "compatibility_8A_9A": 0.96,
+        "expected_high_compatibility": true,
+        "expected_good_compatibility_8B": true,
+        "expected_good_compatibility_9A": true
+      }
+    },
+    {
+      "name": "mix_modes",
+      "success": true,
+      "duration": 2.288818359375e-05,
+      "error": null,
+      "details": {
+        "classic": {
+          "mode_set_successfully": false,
+          "weights": {
+            "key": 0.2,
+            "bpm": 0.1,
+            "energy": 0.2,
+            "emotional": 0.5
+          },
+          "weights_sum": 1.0
+        },
+        "intelligent": {
+          "mode_set_successfully": false,
+          "weights": {
+            "key": 0.2,
+            "bpm": 0.1,
+            "energy": 0.2,
+            "emotional": 0.5
+          },
+          "weights_sum": 1.0
+        },
+        "energy": {
+          "mode_set_successfully": false,
+          "weights": {
+            "key": 0.2,
+            "bpm": 0.1,
+            "energy": 0.2,
+            "emotional": 0.5
+          },
+          "weights_sum": 1.0
+        },
+        "emotional": {
+          "mode_set_successfully": false,
+          "weights": {
+            "key": 0.2,
+            "bpm": 0.1,
+            "energy": 0.2,
+            "emotional": 0.5
+          },
+          "weights_sum": 1.0
+        },
+        "structural": {
+          "mode_set_successfully": false,
+          "weights": {
+            "key": 0.2,
+            "bpm": 0.1,
+            "energy": 0.2,
+            "emotional": 0.5
+          },
+          "weights_sum": 1.0
+        }
+      }
+    },
+    {
+      "name": "file_loading_key_2A_Eb_minor",
+      "success": true,
+      "duration": 2.0503997802734375e-05,
+      "error": null,
+      "details": {
+        "file_path": "test_data/keys/key_2A_Eb_minor.wav",
+        "file_size_mb": 2.5234642028808594,
+        "analysis_time": 8.58306884765625e-06,
+        "error": "AudioAnalyzer.analyze_file() missing 1 required positional argument: 'track_id'"
+      }
+    },
+    {
+      "name": "file_loading_key_2B_Fsharp_major",
+      "success": true,
+      "duration": 1.1682510375976562e-05,
+      "error": null,
+      "details": {
+        "file_path": "test_data/keys/key_2B_Fsharp_major.wav",
+        "file_size_mb": 2.5234642028808594,
+        "analysis_time": 4.5299530029296875e-06,
+        "error": "AudioAnalyzer.analyze_file() missing 1 required positional argument: 'track_id'"
+      }
+    },
+    {
+      "name": "file_loading_bpm_170_8A_house",
+      "success": true,
+      "duration": 1.0013580322265625e-05,
+      "error": null,
+      "details": {
+        "file_path": "test_data/tempos/bpm_170_8A_house.wav",
+        "file_size_mb": 2.5234642028808594,
+        "analysis_time": 4.291534423828125e-06,
+        "error": "AudioAnalyzer.analyze_file() missing 1 required positional argument: 'track_id'"
+      }
+    },
+    {
+      "name": "file_loading_bpm_140_8A_house",
+      "success": true,
+      "duration": 9.775161743164062e-06,
+      "error": null,
+      "details": {
+        "file_path": "test_data/tempos/bpm_140_8A_house.wav",
+        "file_size_mb": 2.5234642028808594,
+        "analysis_time": 4.291534423828125e-06,
+        "error": "AudioAnalyzer.analyze_file() missing 1 required positional argument: 'track_id'"
+      }
+    },
+    {
+      "name": "file_loading_energy_6_8A_125bpm",
+      "success": true,
+      "duration": 9.059906005859375e-06,
+      "error": null,
+      "details": {
+        "file_path": "test_data/energy_levels/energy_6_8A_125bpm.wav",
+        "file_size_mb": 2.5234642028808594,
+        "analysis_time": 3.814697265625e-06,
+        "error": "AudioAnalyzer.analyze_file() missing 1 required positional argument: 'track_id'"
+      }
+    },
+    {
+      "name": "folder_loading_async",
+      "success": true,
+      "duration": 4.76837158203125e-07,
+      "error": null,
+      "details": {
+        "folder_path": "test_data/keys",
+        "success": true,
+        "duration": 0.011743545532226562,
+        "tracks_loaded": 24,
+        "progress_updates": 1,
+        "tracks_per_second": 2043.675816144226
+      }
+    },
+    {
+      "name": "performance_test",
+      "success": true,
+      "duration": 0.0003204345703125,
+      "error": null,
+      "details": null
+    },
+    {
+      "name": "edge_cases",
+      "success": true,
+      "duration": 8.320808410644531e-05,
+      "error": null,
+      "details": {
+        "max_energy": {
+          "success": false,
+          "analysis_time": 4.5299530029296875e-06,
+          "metadata_found": false
+        },
+        "very_fast": {
+          "success": false,
+          "analysis_time": 3.814697265625e-06,
+          "metadata_found": false
+        },
+        "very_slow": {
+          "success": false,
+          "analysis_time": 3.814697265625e-06,
+          "metadata_found": false
+        },
+        "zero_energy": {
+          "success": false,
+          "analysis_time": 3.5762786865234375e-06,
+          "metadata_found": false
+        }
+      }
+    },
+    {
+      "name": "memory_usage",
+      "success": true,
+      "duration": 0.012628793716430664,
+      "error": null,
+      "details": {
+        "memory_before_mb": 55.08984375,
+        "memory_after_mb": 55.21484375,
+        "memory_increase_mb": 0.125,
+        "tracks_loaded": 24
+      }
+    }
+  ],
+  "failed_tests": []
+}
