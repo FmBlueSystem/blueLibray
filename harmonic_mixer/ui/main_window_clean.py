@@ -383,17 +383,24 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Music folder loaded successfully")
     
     def on_track_from_thread(self, track: Track):
-        """Handle track analyzed signal from thread"""
+        """Handle track analyzed signal from thread - thread-safe"""
+        # All Qt signal connections are automatically thread-safe
+        # This method runs in the main thread due to Qt's signal/slot mechanism
         self.track_view.add_track(track)
         # Update track count using the track view's track list
         track_count = len(self.track_view.tracks) if hasattr(self.track_view, 'tracks') else 0
         self.update_track_count(track_count)
     
     def on_load_progress(self, current: int, total: int):
-        """Handle load progress updates"""
-        self.progress_bar.setRange(0, total)
-        self.progress_bar.setValue(current)
-        self.statusBar().showMessage(f"Loading tracks: {current}/{total}")
+        """Handle load progress updates - thread-safe"""
+        # Ensure UI updates happen in main thread
+        if total > 0:
+            self.progress_bar.setRange(0, total)
+            self.progress_bar.setValue(current)
+            self.statusBar().showMessage(f"Loading tracks: {current}/{total}")
+        else:
+            self.progress_bar.setRange(0, 0)  # Indeterminate
+            self.statusBar().showMessage("Loading tracks...")
     
     
     # Event handlers
